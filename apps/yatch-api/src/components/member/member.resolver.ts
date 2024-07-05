@@ -14,18 +14,18 @@ export class MemberResolver {
 	@Mutation(() => String)
 	public async login(): Promise<string> {
 		console.log('Mutation: login');
-		return 'login executed!';
+		return this.memberService.login();
 	}
 
 	@Mutation(() => String)
 	public async updateMember(): Promise<string> {
 		console.log('Mutation: updateMember');
-		return 'updateMember executed!';
+		return this.memberService.updateMember();
 	}
 
 	@Query(() => String)
 	public async getMember(): Promise<string> {
 		console.log('Query: getMember');
-		return 'getMember executed!';
+		return this.memberService.getMember();
 	}
 }
