@@ -19,7 +19,8 @@ export class MemberService {
 		input.memberPassword = await this.authService.hashPassword(input.memberPassword);
 		try {
 			const result = await this.memberModel.create(input);
-			//TODO: Authentication via TOKEN
+			// Authentication via TOKEN
+			result.accessToken = await this.authService.createToken(result);
 			return result;
 		} catch (err) {
 			console.log('Error, Service.model:', err.message);
@@ -40,9 +41,10 @@ export class MemberService {
 			throw new InternalServerErrorException(Message.BLOCKED_USER);
 		}
 
-		//TODO: Compare passswords
+		//Compare passswords
 		const isMach = await this.authService.comparePasswords(input.memberPassword, response.memberPassword);
 		if (!isMach) throw new InternalServerErrorException(Message.WRONG_PASSWORD);
+		response.accessToken = await this.authService.createToken(response);
 
 		return response;
 	}
