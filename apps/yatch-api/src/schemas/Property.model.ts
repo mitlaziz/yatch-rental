@@ -1,5 +1,13 @@
 import { Schema } from 'mongoose';
-import { PropertyLocation, PropertyStatus, PropertyType } from '../libs/enums/property.enum';
+import {
+	PropertyAmenity,
+	PropertyCategory,
+	PropertyLocation,
+	PropertyLocationView,
+	PropertySize,
+	PropertyStatus,
+	PropertyType,
+} from '../libs/enums/property.enum';
 
 const PropertySchema = new Schema(
 	{
@@ -21,6 +29,30 @@ const PropertySchema = new Schema(
 			required: true,
 		},
 
+		propertyLocationView: {
+			type: String,
+			enum: PropertyLocationView,
+			required: true,
+		},
+
+		propertySize: {
+			type: String,
+			enum: PropertySize,
+			required: true,
+		},
+
+		propertyCategory: {
+			type: String,
+			enum: PropertyCategory,
+			required: true,
+		},
+
+		propertyAmenity: {
+			type: [String],
+			enum: PropertyAmenity,
+			required: true,
+		},
+
 		propertyAddress: {
 			type: String,
 			required: true,
@@ -36,17 +68,7 @@ const PropertySchema = new Schema(
 			required: true,
 		},
 
-		propertySquare: {
-			type: Number,
-			required: true,
-		},
-
-		propertyBeds: {
-			type: Number,
-			required: true,
-		},
-
-		propertyRooms: {
+		propertyCabins: {
 			type: Number,
 			required: true,
 		},
