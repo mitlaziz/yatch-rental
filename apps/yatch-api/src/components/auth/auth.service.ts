@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
-import { T } from '../../libs/types/common';
 import { Member } from '../../libs/dto/member/member';
 import { JwtService } from '@nestjs/jwt';
+import { T } from '../../libs/types/common';
 import { shapeIntoMongoObjectId } from '../../libs/config';
 
 @Injectable()
@@ -14,18 +14,16 @@ export class AuthService {
 		return await bcrypt.hash(memberPassword, salt);
 	}
 
-	public async comparePasswords(password: string, hashedPassword: string): Promise<boolean> {
+	public async comparePassword(password: string, hashedPassword: string): Promise<boolean> {
 		return await bcrypt.compare(password, hashedPassword);
 	}
 
 	public async createToken(member: Member): Promise<string> {
 		const payload: T = {};
-		Object.keys(member['_doc'] ? member['_doc'] : member).map((ele) => {
-			payload[`${ele}`] = member[`${ele}`];
+		Object.keys(member['_doc'] ? member['_doc'] : member).forEach((key) => {
+			payload[key] = member[key];
+			delete payload.memberPassword;
 		});
-		delete payload.memberPassword;
-		console.log('payload:', payload);
-
 		return await this.jwtService.signAsync(payload);
 	}
 
