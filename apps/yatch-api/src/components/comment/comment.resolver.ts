@@ -1,6 +1,6 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { CommentService } from './comment.service';
-import { UseGuards } from '@nestjs/common';
+import { InternalServerErrorException, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { CommentInput, CommentsInquiry } from '../../libs/dto/comment/comment.input';
 import { ObjectId } from 'mongoose';
@@ -35,7 +35,7 @@ export class CommentResolver {
 	): Promise<Comment> {
 		console.log('Mutation: updateComment');
 		input._id = shapeIntoMongoObjectId(input._id);
-		return await this, this.commentService.updateComment(memberId, input);
+		return await this.commentService.updateComment(memberId, input);
 	}
 
 	@UseGuards(WithoutGuard)
