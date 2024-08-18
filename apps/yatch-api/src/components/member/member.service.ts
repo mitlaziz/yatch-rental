@@ -174,7 +174,7 @@ export class MemberService {
 			notificationStatus: NotificationStatus.WAIT,
 			notificationGroup: NotificationGroup.MEMBER,
 			notificationTitle: 'New Like',
-			notificationDesc: `${authMember.memberNick} liked your image`,
+			notificationDesc: `${authMember.memberNick} liked your photo`,
 			authorId: memberId,
 			receiverId: target._id,
 			propertyId: likeRefId,
