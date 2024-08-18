@@ -21,6 +21,9 @@ import { lookupAuthMemberLiked, lookupMember, shapeIntoMongoObjectId } from '../
 import { LikeService } from '../like/like.service';
 import { LikeInput } from '../../libs/dto/like/like.input';
 import { LikeGroup } from '../../libs/enums/like.enum';
+import { NotificationService } from '../notification/notification.service';
+import { NotificationInput } from '../../libs/dto/notification/notification.input';
+import { NotificationGroup, NotificationStatus, NotificationType } from '../../libs/enums/notification.enum';
 
 @Injectable()
 export class PropertyService {
@@ -29,6 +32,7 @@ export class PropertyService {
 		private memberService: MemberService,
 		private viewService: ViewService,
 		private likeService: LikeService,
+		private notificationService: NotificationService,
 	) {}
 
 	public async createProperty(input: PropertyInput): Promise<Property> {
@@ -210,6 +214,17 @@ export class PropertyService {
 		const result = await this.propertyStatsEditor({ _id: likeRefId, targetKey: 'propertyLikes', modifier: modifier });
 
 		if (!result) throw new InternalServerErrorException(Message.SOMETHING_WENT_WRONG);
+		const notificationInput: NotificationInput = {
+			notificationType: NotificationType.LIKE,
+			notificationStatus: NotificationStatus.WAIT,
+			notificationGroup: NotificationGroup.PROPERTY,
+			notificationTitle: 'New Like',
+			notificationDesc: `${memberId} liked your property ${likeRefId}`,
+			authorId: memberId,
+			receiverId: target.memberId,
+			propertyId: likeRefId,
+		};
+		await this.notificationService.createNotification(notificationInput);
 		return result;
 	}
 
