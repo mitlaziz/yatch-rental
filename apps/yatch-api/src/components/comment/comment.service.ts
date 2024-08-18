@@ -18,6 +18,7 @@ import { View } from '../../libs/dto/view/view';
 import { NotificationService } from '../notification/notification.service';
 import { NotificationInput } from '../../libs/dto/notification/notification.input';
 import { NotificationGroup, NotificationStatus, NotificationType } from '../../libs/enums/notification.enum';
+import { MemberStatus } from '../../libs/enums/member.enum';
 
 @Injectable()
 export class CommentService {
@@ -53,12 +54,16 @@ export class CommentService {
 				});
 				const property = await this.propertyModel.findOne({ _id: input.commentRefId }).exec();
 				if (property) {
+					const authMember: Member = await this.memberModel
+						.findOne({ _id: memberId, memberStatus: MemberStatus.ACTIVE })
+						.exec();
+					if (!authMember) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
 					const notificationInput: NotificationInput = {
 						notificationType: NotificationType.COMMENT,
 						notificationStatus: NotificationStatus.WAIT,
 						notificationGroup: NotificationGroup.PROPERTY,
 						notificationTitle: 'New Comment',
-						notificationDesc: `${memberId} commented on your property ${input.commentRefId}`,
+						notificationDesc: `${authMember.memberNick} commented on your property ${property.propertyTitle}`,
 						authorId: memberId,
 						receiverId: property.memberId,
 						propertyId: input.commentRefId,
@@ -75,6 +80,10 @@ export class CommentService {
 				// Fetch the target article to get the owner (receiver)
 				const article = await this.boardArticleModel.findOne({ _id: input.commentRefId });
 				if (article) {
+					const authMember: Member = await this.memberModel
+						.findOne({ _id: memberId, memberStatus: MemberStatus.ACTIVE })
+						.exec();
+					if (!authMember) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
 					const notificationInput: NotificationInput = {
 						notificationType: NotificationType.COMMENT,
 						notificationStatus: NotificationStatus.WAIT,
@@ -102,7 +111,7 @@ export class CommentService {
 						notificationStatus: NotificationStatus.WAIT,
 						notificationGroup: NotificationGroup.MEMBER,
 						notificationTitle: 'New Comment',
-						notificationDesc: `${memberId} commented on your profile ${input.commentRefId}`,
+						notificationDesc: `${memberId} commented on your profile`,
 						authorId: memberId,
 						receiverId: member._id,
 					};

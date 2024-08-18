@@ -24,11 +24,15 @@ import { LikeGroup } from '../../libs/enums/like.enum';
 import { NotificationService } from '../notification/notification.service';
 import { NotificationInput } from '../../libs/dto/notification/notification.input';
 import { NotificationGroup, NotificationStatus, NotificationType } from '../../libs/enums/notification.enum';
+import { Member } from '../../libs/dto/member/member';
+import { MemberStatus } from '../../libs/enums/member.enum';
 
 @Injectable()
 export class PropertyService {
 	constructor(
 		@InjectModel('Property') private readonly propertyModel: Model<Property>,
+		@InjectModel('Member') private readonly memberModel: Model<Member>,
+
 		private memberService: MemberService,
 		private viewService: ViewService,
 		private likeService: LikeService,
@@ -202,6 +206,11 @@ export class PropertyService {
 			.exec();
 		if (!target) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
 
+		const authMember: Member = await this.memberModel
+			.findOne({ _id: memberId, memberStatus: MemberStatus.ACTIVE })
+			.exec();
+		if (!authMember) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+
 		const input: LikeInput = {
 			memberId: memberId,
 			likeRefId: likeRefId,
@@ -219,7 +228,7 @@ export class PropertyService {
 			notificationStatus: NotificationStatus.WAIT,
 			notificationGroup: NotificationGroup.PROPERTY,
 			notificationTitle: 'New Like',
-			notificationDesc: `${memberId} liked your property ${likeRefId}`,
+			notificationDesc: `${authMember.memberNick} liked your property ${target.propertyTitle} `,
 			authorId: memberId,
 			receiverId: target.memberId,
 			propertyId: likeRefId,

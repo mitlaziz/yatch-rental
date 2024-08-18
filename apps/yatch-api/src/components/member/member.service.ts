@@ -152,6 +152,11 @@ export class MemberService {
 		const target: Member = await this.memberModel.findOne({ _id: likeRefId, memberStatus: MemberStatus.ACTIVE }).exec();
 		if (!target) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
 
+		const authMember: Member = await this.memberModel
+			.findOne({ _id: memberId, memberStatus: MemberStatus.ACTIVE })
+			.exec();
+		if (!authMember) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+
 		const input: LikeInput = {
 			memberId: memberId,
 			likeRefId: likeRefId,
@@ -169,7 +174,7 @@ export class MemberService {
 			notificationStatus: NotificationStatus.WAIT,
 			notificationGroup: NotificationGroup.MEMBER,
 			notificationTitle: 'New Like',
-			notificationDesc: `${memberId} liked your agent ${likeRefId}`,
+			notificationDesc: `${authMember.memberNick} liked your image`,
 			authorId: memberId,
 			receiverId: target._id,
 			propertyId: likeRefId,

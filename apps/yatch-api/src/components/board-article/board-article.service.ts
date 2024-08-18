@@ -21,11 +21,14 @@ import { LikeGroup } from '../../libs/enums/like.enum';
 import { NotificationService } from '../notification/notification.service';
 import { NotificationInput } from '../../libs/dto/notification/notification.input';
 import { NotificationGroup, NotificationStatus, NotificationType } from '../../libs/enums/notification.enum';
+import { Member } from '../../libs/dto/member/member';
+import { MemberStatus } from '../../libs/enums/member.enum';
 
 @Injectable()
 export class BoardArticleService {
 	constructor(
 		@InjectModel('BoardArticle') private readonly boardArticleModel: Model<BoardArticle>,
+		@InjectModel('Member') private readonly memberModel: Model<Member>,
 		private readonly memberService: MemberService,
 		private readonly viewService: ViewService,
 		private readonly likeService: LikeService,
@@ -139,6 +142,10 @@ export class BoardArticleService {
 			.exec();
 		if (!target) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
 
+		const authMember: Member = await this.memberModel
+			.findOne({ _id: memberId, memberStatus: MemberStatus.ACTIVE })
+			.exec();
+		if (!authMember) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
 		const input: LikeInput = {
 			memberId: memberId,
 			likeRefId: likeRefId,
@@ -154,7 +161,7 @@ export class BoardArticleService {
 				notificationStatus: NotificationStatus.WAIT,
 				notificationGroup: NotificationGroup.ARTICLE,
 				notificationTitle: 'New Like',
-				notificationDesc: `${memberId} liked your article ${likeRefId}`,
+				notificationDesc: `${memberId} liked your article ${target.articleTitle}`,
 				authorId: memberId,
 				receiverId: target.memberId,
 				articleId: likeRefId,

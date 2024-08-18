@@ -8,6 +8,7 @@ import { ViewModule } from '../view/view.module';
 import { MemberModule } from '../member/member.module';
 import { LikeModule } from '../like/like.module';
 import { NotificationModule } from '../notification/notification.module';
+import MemberSchema from '../../schemas/Member.model';
 
 @Module({
 	imports: [
@@ -17,6 +18,8 @@ import { NotificationModule } from '../notification/notification.module';
 				schema: PropertySchema,
 			},
 		]),
+		MongooseModule.forFeature([{ name: 'Member', schema: MemberSchema }]),
+
 		AuthModule,
 		ViewModule,
 		MemberModule,
