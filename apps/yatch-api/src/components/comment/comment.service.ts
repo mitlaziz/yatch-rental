@@ -11,14 +11,26 @@ import { Comment, Comments } from '../../libs/dto/comment/comment';
 import { CommentUpdate } from '../../libs/dto/comment/comment.update';
 import { T } from '../../libs/types/common';
 import { lookupMember } from '../../libs/config';
+import { Property } from '../../libs/dto/property/property';
+import { Member } from '../../libs/dto/member/member';
+import { BoardArticle } from '../../libs/dto/board-article/board-article';
+import { View } from '../../libs/dto/view/view';
+import { NotificationService } from '../notification/notification.service';
+import { NotificationInput } from '../../libs/dto/notification/notification.input';
+import { NotificationGroup, NotificationStatus, NotificationType } from '../../libs/enums/notification.enum';
 
 @Injectable()
 export class CommentService {
 	constructor(
 		@InjectModel('Comment') private readonly commentModel: Model<Comment>,
+		@InjectModel('Property') private readonly propertyModel: Model<Property>,
+		@InjectModel('Member') private readonly memberModel: Model<Member>,
+		@InjectModel('BoardArticle') private readonly boardArticleModel: Model<BoardArticle>,
+
 		private readonly memberService: MemberService,
 		private readonly propertyService: PropertyService,
 		private readonly boardArticleService: BoardArticleService,
+		private readonly notificationService: NotificationService,
 	) {}
 
 	public async createComment(memberId: ObjectId, input: CommentInput): Promise<Comment> {
@@ -39,6 +51,20 @@ export class CommentService {
 					targetKey: 'propertyComments',
 					modifier: 1,
 				});
+				const property = await this.propertyModel.findOne({ _id: input.commentRefId }).exec();
+				if (property) {
+					const notificationInput: NotificationInput = {
+						notificationType: NotificationType.COMMENT,
+						notificationStatus: NotificationStatus.WAIT,
+						notificationGroup: NotificationGroup.PROPERTY,
+						notificationTitle: 'New Comment',
+						notificationDesc: `${memberId} commented on your property ${input.commentRefId}`,
+						authorId: memberId,
+						receiverId: property.memberId,
+						propertyId: input.commentRefId,
+					};
+					await this.notificationService.createNotification(notificationInput);
+				}
 				break;
 			case CommentGroup.ARTICLE:
 				await this.boardArticleService.boardArticleStatsEditor({
@@ -46,6 +72,21 @@ export class CommentService {
 					targetKey: 'articleComments',
 					modifier: 1,
 				});
+				// Fetch the target article to get the owner (receiver)
+				const article = await this.boardArticleModel.findOne({ _id: input.commentRefId });
+				if (article) {
+					const notificationInput: NotificationInput = {
+						notificationType: NotificationType.COMMENT,
+						notificationStatus: NotificationStatus.WAIT,
+						notificationGroup: NotificationGroup.ARTICLE,
+						notificationTitle: 'New Comment',
+						notificationDesc: `${memberId} commented on your article ${input.commentRefId}`,
+						authorId: memberId,
+						receiverId: article.memberId,
+						articleId: input.commentRefId,
+					};
+					await this.notificationService.createNotification(notificationInput);
+				}
 				break;
 			case CommentGroup.MEMBER:
 				await this.memberService.memberStatsEditor({
@@ -53,6 +94,20 @@ export class CommentService {
 					targetKey: 'memberComments',
 					modifier: 1,
 				});
+				// Fetch the target member to get the owner (receiver)
+				const member = await this.memberModel.findOne({ _id: input.commentRefId });
+				if (member) {
+					const notificationInput: NotificationInput = {
+						notificationType: NotificationType.COMMENT,
+						notificationStatus: NotificationStatus.WAIT,
+						notificationGroup: NotificationGroup.MEMBER,
+						notificationTitle: 'New Comment',
+						notificationDesc: `${memberId} commented on your profile ${input.commentRefId}`,
+						authorId: memberId,
+						receiverId: member._id,
+					};
+					await this.notificationService.createNotification(notificationInput);
+				}
 				break;
 		}
 

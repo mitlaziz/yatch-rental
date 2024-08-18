@@ -17,7 +17,7 @@ import { NotificationModule } from '../notification/notification.module';
 				schema: BoardArticleSchema,
 			},
 		]),
-		// AuthModule,
+		AuthModule,
 		MemberModule,
 		ViewModule,
 		LikeModule,
